@@ -1,60 +1,58 @@
 name: Release
+
 on:
   push:
-    branches:
-      - release
+    branches: [release]
 
 jobs:
-  release:
+  build:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
-
-      - name: Get version
-        id: package-version
-        run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
-
-      - name: Check if tag exists
-        id: check_tag
-        run: |
-          if git rev-parse "v${{ steps.package-version.outputs.version }}" >/dev/null 2>&1; then
-            echo "Tag v${{ steps.package-version.outputs.version }} already exists. Please update version in package.json"
-            exit 1
-          fi
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
 
-      - uses: pnpm/action-setup@v2
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
         with:
-          version: latest
+          version: 8
 
       - name: Install dependencies
         run: pnpm install
 
-      - name: Create and push tag
+      - name: Build
+        run: pnpm run build:linux
+
+      - name: Configure Git
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git tag "v${{ steps.package-version.outputs.version }}"
-          git push origin "v${{ steps.package-version.outputs.version }}"
 
-      - name: Build
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Get version from package.json
+        id: version
+        run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+
+      - name: Create and push tag
         run: |
-          pnpm build:linux
-          mkdir -p scrcpy-empty
-          tar -czf dist/scrcpy-folder.tar.gz scrcpy-empty
+          git tag "v${{ steps.version.outputs.version }}"
+          git push origin "v${{ steps.version.outputs.version }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: 'v${{ steps.package-version.outputs.version }}'
+          tag_name: 'v${{ steps.version.outputs.version }}'
+          name: 'Release v${{ steps.version.outputs.version }}'
           files: |
-            dist/**/*.AppImage
-            dist/scrcpy-folder.tar.gz
+            dist/*.AppImage
+            dist/*.deb
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
