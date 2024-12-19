@@ -63,18 +63,8 @@
     },
     "linux": {
       "target": [
-        [
-          "AppImage",
-          {
-            "compression": "maximum"
-          }
-        ],
-        [
-          "deb",
-          {
-            "compression": "xz"
-          }
-        ]
+        "AppImage",
+        "deb"
       ],
       "category": "Utility",
       "icon": "resources/icon.png"
