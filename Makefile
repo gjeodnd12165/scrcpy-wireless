@@ -16,17 +16,17 @@ release:
 		echo "Error: Working directory not clean"; \
 		exit 1; \
 	fi
-	@echo "Creating release branch..."
-	@git checkout -B release main
-	@echo "Building application..."
-	@npm run build:linux
-	@echo "Adding built files..."
-	@git add dist/* -f
-	@git commit -m "Release: Add built files"
-	@echo "Pushing to remote..."
-	@git push -f origin release
-	@echo "Switching back to main branch..."
-	@git checkout main
+	@(trap 'echo "Returning to main branch..." && git switch main' EXIT; \
+		echo "Creating release branch..." && \
+		git switch -C release main && \
+		echo "Building application..." && \
+		npm run build:linux && \
+		echo "Adding built files..." && \
+		git add dist/* -f && \
+		git commit -m "Release: Add built files" && \
+		echo "Pushing to remote..." && \
+		git push -f origin release \
+	)
 	@echo "Release process completed successfully!"
 
 # Clean up build artifacts
