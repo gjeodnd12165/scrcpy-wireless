@@ -19,26 +19,13 @@ release:
 	@(trap 'echo "Returning to main branch..." && git switch main' EXIT; \
 		echo "Creating release branch..." && \
 		git switch -C release main && \
-		echo "Building application..." && \
-		npm run build:linux && \
-		echo "Adding built files..." && \
-		git add dist/* -f && \
-		git commit -m "Release: Add built files" && \
 		echo "Pushing to remote..." && \
 		git push -f origin release \
 	)
 	@echo "Release process completed successfully!"
 
-# Clean up build artifacts
-clean:
-	@echo "Cleaning build artifacts..."
-	@rm -rf dist/
-	@rm -rf out/
-	@echo "Clean completed!"
-
 # Show help
 help:
 	@echo "Available targets:"
-	@echo "  release  - Create release branch with built files and push to remote"
-	@echo "  clean    - Remove build artifacts"
+	@echo "  release  - Create release branch from main and push to remote"
 	@echo "  help     - Show this help message"
