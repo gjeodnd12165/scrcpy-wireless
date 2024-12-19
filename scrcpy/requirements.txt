@@ -1,0 +1,11 @@
+# For GUI
+tkinter
+
+# For development
+pytest
+black
+flake8
+pyinstaller
+
+# Add versions like:
+# pytest==7.4.3 
