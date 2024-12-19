@@ -49,6 +49,13 @@
       }
     ],
     "compression": "maximum",
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "gjeodnd12165",
+        "repo": "scrcpy-wireless"
+      }
+    ],
     "mac": {
       "target": [
         "dmg"
@@ -63,10 +70,22 @@
     },
     "linux": {
       "target": [
-        "AppImage"
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64"
+          ]
+        }
       ],
+      "maintainer": "gjeodnd12165",
       "category": "Utility",
-      "icon": "resources/icon.png"
+      "icon": "resources/icon.png",
+      "desktop": {
+        "Name": "Scrcpy Wireless",
+        "Comment": "Wireless Android screen mirroring",
+        "Categories": "Utility;",
+        "Type": "Application"
+      }
     },
     "nsis": {
       "oneClick": false,
