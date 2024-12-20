@@ -47,6 +47,17 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and Release
-        run: pnpm run build:linux
+        id: build
+        run: |
+          pnpm run build:linux --publish always
+          ls -la dist/
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Cleanup on failure
+        if: failure() && steps.build.outcome == 'failure'
+        run: |
+          git push --delete origin "v${{ steps.version.outputs.version }}"
+          git tag -d "v${{ steps.version.outputs.version }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
