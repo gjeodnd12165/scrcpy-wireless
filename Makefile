@@ -8,9 +8,9 @@ define branch-Checking
 	@if [ "$$(git rev-parse --abbrev-ref HEAD)" != "main" ]; then \
 		echo "Error: Must be on main branch"; \
 		exit 1; \
-	fi
-	@echo "Ensuring working directory is clean..."
-	@if [ -n "$$(git status --porcelain)" ]; then \
+	fi; \
+	echo "Ensuring working directory is clean..."; \
+	if [ -n "$$(git status --porcelain)" ]; then \
 		echo "Error: Working directory not clean"; \
 		exit 1; \
 	fi
@@ -46,26 +46,3 @@ release:
 		$(call do_release) \
 	)
 	@echo "Release process completed successfully!"
-
-release-force:
-	@echo "Starting FORCE release process..."
-	@$(call branch-Checking)
-
-	@if git ls-remote --tags origin "$(VERSION)" | grep -q "$(VERSION)"; then \
-		echo "Removing existing tag: $(VERSION)"; \
-		git tag -d "$(VERSION)" || { echo "Error: Failed to delete local tag $(VERSION)"; exit 1; }; \
-		git push origin :refs/tags/$(VERSION) || { echo "Error: Failed to delete remote tag $(VERSION)"; exit 1; }; \
-	else \
-		echo "Tag $(VERSION) does not exist. Proceeding with release."; \
-	fi
-
-	@(trap 'echo "Returning to main branch..." && git switch main || echo "Failed to switch back to main"' EXIT; \
-		$(call do_release) \
-	)
-	@echo "Force Release process completed successfully!"
-
-help:
-	@echo "Available targets:"
-	@echo "  release        - Create release branch from main and push to remote (fails if tag exists)."
-	@echo "  release:force  - Create release branch from main and push to remote (overwrites existing tag)."
-	@echo "  help           - Show this help message."
