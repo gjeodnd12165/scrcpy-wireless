@@ -1,4 +1,7 @@
-VERSION := $(shell node -p "require('./package.json').version")
+VERSION := $(shell node -p "require('./package.json').version" 2>/dev/null || echo "")
+ifeq ($(VERSION),)
+$(error "Error: Unable to determine version. Ensure package.json exists and is valid.")
+endif
 
 define branch-Checking
 	@echo "Checking current branch..."
@@ -15,11 +18,12 @@ endef
 
 define do_release
 	@echo "Creating release branch..."
-	@git switch -C release main || exit 1 # 브랜치 생성 실패 시 종료
+	@git switch -C release main || git checkout -b release main || { echo "Error: Failed to create or switch to release branch."; exit 1; }
 	@echo "Creating tag: $(VERSION)"
-	@git tag "$(VERSION)" || exit 1 # 태그 생성 실패 시 종료
+	@git tag "$(VERSION)" || { echo "Error: Failed to create tag $(VERSION)."; exit 1; }
 	@echo "Pushing to remote..."
-	@git push origin release --tags || exit 1 # 푸시 실패 시 종료
+	@git push origin release || { echo "Error: Failed to push release branch."; exit 1; }
+	@git push --tags || { echo "Error: Failed to push tags."; exit 1; }
 endef
 
 .PHONY: release release-force clean help
@@ -28,14 +32,17 @@ release:
 	@echo "Starting release process..."
 	@$(call branch-Checking)
 
-	# Check if tag already exists in remote
+	@if ! git ls-remote --tags origin "$(VERSION)" > /dev/null 2>&1; then \
+		echo "Error: Unable to check remote tags. Ensure you have network connectivity."; \
+		exit 1; \
+	fi
+
 	@if git ls-remote --tags origin "$(VERSION)" | grep -q "$(VERSION)"; then \
 		echo "Error: Tag $(VERSION) already exists on remote. Cannot create a new release. Use make release:force to overwrite."; \
 		exit 1; \
 	fi
 
-	# Execute release steps and ensure returning to main branch
-	@(trap 'echo "Returning to main branch..." && git switch main' EXIT; \
+	@(trap 'echo "Returning to main branch..." && git switch main || echo "Failed to switch back to main"' EXIT; \
 		$(call do_release) \
 	)
 	@echo "Release process completed successfully!"
@@ -44,21 +51,21 @@ release-force:
 	@echo "Starting FORCE release process..."
 	@$(call branch-Checking)
 
-	# If tag exists, delete it locally and remotely
 	@if git ls-remote --tags origin "$(VERSION)" | grep -q "$(VERSION)"; then \
 		echo "Removing existing tag: $(VERSION)"; \
 		git tag -d "$(VERSION)" || { echo "Error: Failed to delete local tag $(VERSION)"; exit 1; }; \
 		git push origin :refs/tags/$(VERSION) || { echo "Error: Failed to delete remote tag $(VERSION)"; exit 1; }; \
+	else \
+		echo "Tag $(VERSION) does not exist. Proceeding with release."; \
 	fi
 
-	# Execute release steps and ensure returning to main branch
-	@(trap 'echo "Returning to main branch..." && git switch main' EXIT; \
+	@(trap 'echo "Returning to main branch..." && git switch main || echo "Failed to switch back to main"' EXIT; \
 		$(call do_release) \
 	)
 	@echo "Force Release process completed successfully!"
 
 help:
 	@echo "Available targets:"
-	@echo "	release			 - Create release branch from main and push to remote (fails if tag exists)."
-	@echo "	release:force - Create release branch from main and push to remote (overwrites existing tag)."
-	@echo "	help					- Show this help message"
+	@echo "  release        - Create release branch from main and push to remote (fails if tag exists)."
+	@echo "  release:force  - Create release branch from main and push to remote (overwrites existing tag)."
+	@echo "  help           - Show this help message."
