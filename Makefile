@@ -24,7 +24,7 @@ release:
 		exit 1; \
 	fi
 
-	@if git tag -l "$(VERSION)" > /dev/null; then \
+	@if [ "$$(git tag -l '$(VERSION)')" != "" ]; then \
 		echo "Error: Tag $(VERSION) already exists. Cannot create a new release. Use make release:force to overwrite."; \
 		exit 1; \
 	fi
