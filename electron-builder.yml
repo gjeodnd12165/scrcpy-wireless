@@ -1,7 +1,8 @@
-appId: com.electron.app
-productName: '-'
+appId: com.scrcpy.wireless
+productName: scrcpy-wireless
 directories:
   buildResources: build
+  output: dist
 files:
   - '!**/.vscode/*'
   - '!src/*'
@@ -14,12 +15,11 @@ asarUnpack:
   - resources/**
   - resources/scrcpy/**/*
 win:
-  executableName: '-'
+  executableName: scrcpy-wireless
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}
   uninstallDisplayName: ${productName}
-  createDesktopShortcut: always
 mac:
   entitlementsInherit: build/entitlements.mac.plist
   extendInfo:
@@ -41,7 +41,8 @@ appImage:
   artifactName: ${name}-${version}.${ext}
 npmRebuild: false
 publish:
-  provider: generic
-  url: https://example.com/auto-updates
+  provider: github
+  owner: gjeodnd12165
+  repo: scrcpy-wireless
 electronDownload:
   mirror: https://npmmirror.com/mirrors/electron/

@@ -1,6 +1,6 @@
 {
   "name": "scrcpy-wireless",
-  "version": "0.1.0",
+  "version": "v0.1.0-testing",
   "description": "A GUI application for wireless Android screen mirroring using scrcpy",
   "main": "out/main/index.js",
   "author": {
@@ -20,77 +20,9 @@
     "build": "npm run typecheck && electron-vite build",
     "postinstall": "electron-builder install-app-deps",
     "build:unpack": "npm run build && electron-builder --dir",
-    "build:win": "npm run build && electron-builder --win",
-    "build:mac": "npm run build && electron-builder --mac",
-    "build:linux": "npm run build && electron-builder --linux --publish always"
-  },
-  "build": {
-    "appId": "com.scrcpy.wireless",
-    "productName": "Scrcpy Wireless",
-    "directories": {
-      "output": "dist",
-      "buildResources": "resources"
-    },
-    "files": [
-      "out/**/*"
-    ],
-    "extraResources": [
-      {
-        "from": "scrcpy",
-        "to": "scrcpy",
-        "filter": [
-          "adb",
-          "adb.exe",
-          "scrcpy",
-          "scrcpy.exe",
-          "*.so",
-          "*.dll"
-        ]
-      }
-    ],
-    "compression": "maximum",
-    "publish": [
-      {
-        "provider": "github",
-        "owner": "gjeodnd12165",
-        "repo": "scrcpy-wireless"
-      }
-    ],
-    "mac": {
-      "target": [
-        "dmg"
-      ],
-      "category": "public.app-category.utilities"
-    },
-    "win": {
-      "target": [
-        "nsis"
-      ],
-      "icon": "resources/icon.ico"
-    },
-    "linux": {
-      "target": [
-        {
-          "target": "AppImage",
-          "arch": [
-            "x64"
-          ]
-        }
-      ],
-      "maintainer": "gjeodnd12165",
-      "category": "Utility",
-      "icon": "resources/icon.png",
-      "desktop": {
-        "Name": "Scrcpy Wireless",
-        "Comment": "Wireless Android screen mirroring",
-        "Categories": "Utility;",
-        "Type": "Application"
-      }
-    },
-    "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true
-    }
+    "build:win": "pnpm run build && electron-builder --win",
+    "build:mac": "pnpm run build && electron-builder --mac",
+    "build:linux": "pnpm run build && electron-builder --linux"
   },
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.1",
