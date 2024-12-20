@@ -28,8 +28,9 @@ release:
 	@echo "Starting release process..."
 	@$(call branch-Checking)
 
-	@if git tag -l "$(VERSION)" > /dev/null; then \
-		echo "Error: Tag $(VERSION) already exists. Cannot create a new release. Use make release:force to overwrite."; \
+	# Check if tag already exists in remote
+	@if git ls-remote --tags origin "$(VERSION)" | grep -q "$(VERSION)"; then \
+		echo "Error: Tag $(VERSION) already exists on remote. Cannot create a new release. Use make release:force to overwrite."; \
 		exit 1; \
 	fi
 
@@ -42,7 +43,8 @@ release-force:
 	@echo "Starting FORCE release process..."
 	@$(call branch-Checking)
 
-	@if git tag -l "$(VERSION)" > /dev/null; then \
+	# If tag exists, delete it locally and remotely
+	@if git ls-remote --tags origin "$(VERSION)" | grep -q "$(VERSION)"; then \
 		echo "Removing existing tag: $(VERSION)"; \
 		git tag -d "$(VERSION)" || { echo "Error: Failed to delete local tag $(VERSION)"; exit 1; }; \
 		git push origin :refs/tags/$(VERSION) || { echo "Error: Failed to delete remote tag $(VERSION)"; exit 1; }; \
